@@ -2,8 +2,12 @@ from board import Board
 from interactor import Interactor
 import wrecked
 import time
+import sys
 
 class Session:
+    CHR_UNKNOWN = ' '
+    CHR_TRUE = chr(9632)
+    CHR_FALSE = chr(9711)
     def __init__(self, **kwargs):
         self.root = wrecked.init()
 
@@ -15,19 +19,29 @@ class Session:
         self.playing = False
         self.complete = False
 
+        self.start_time = 0
+        self.end_time = 0
+
         self.cursor_position = 0
 
         self.rect_row_guides = self.root.new_rect()
         self.rect_column_guides = self.root.new_rect()
         self.rect_board = self.root.new_rect()
-        #self.layer_board = self.rect_board.new_rect()
-        #self.layer_board.set_transparency(True)
-        #self.rect_cursor = self.layer_board.new_rect()
+        self._rect_guides = []
 
         self.cell_rects = {}
         for y in range(height):
             for x in range(width):
                 self.cell_rects[(x, y)] = self.rect_board.new_rect()
+
+        self.undo_stack = []
+
+    def undo(self):
+        if self.undo_stack:
+            x, y, value = self.undo_stack.pop()
+            self.game_board.set_cell(x, y, value)
+            self.draw_board_cell((y * self.game_board.get_width()) + x)
+            self.draw()
 
     def keep_cursor_within_bounds(self):
         self.cursor_position = max(0, self.cursor_position)
@@ -40,18 +54,39 @@ class Session:
     def check_complete(self):
         if self.match_board.compare_board(self.game_board):
             self.complete = True
-            self.quit()
+            self.end_time = time.time() - self.start_time
+
+            for rect in self.cell_rects.values():
+                rect.set_fg_color(wrecked.BLUE)
+
+            for rect in self._rect_guides:
+                rect.set_fg_color(wrecked.BLUE)
+
+            self.rect_board.set_fg_color(wrecked.BLUE)
+            self.draw()
 
     def set_board_cell(self, value):
+        if self.complete:
+            return
+
         board_width = self.game_board.get_width()
         x = self.cursor_position % board_width
         y = self.cursor_position // board_width
-        self.game_board.set_cell(x, y, value)
+        current_value = self.game_board.get_cell_value(x, y)
+        self.undo_stack.append((x, y, current_value))
+
+        if current_value == value:
+            self.game_board.set_cell(x, y, 0)
+        else:
+            self.game_board.set_cell(x, y, value)
         self.draw_board_cell(self.cursor_position)
         self.draw()
         self.check_complete()
 
     def set_cursor_position(self, x, y):
+        if self.complete:
+            return
+
         original_cursor_position = self.cursor_position
         self.cursor_position = (y * self.game_board.get_width()) + x
         self.keep_cursor_within_bounds()
@@ -60,33 +95,57 @@ class Session:
         self.draw()
 
     def move_cursor_up(self):
+        if self.complete:
+            return
+
         original_cursor_position = self.cursor_position
+
+        if self.cursor_position < self.game_board.get_width():
+            self.cursor_position += self.game_board.get_width() * self.game_board.get_height()
         self.cursor_position -= self.game_board.get_width()
-        self.keep_cursor_within_bounds()
+
         self.draw_board_cell(original_cursor_position)
         self.draw_board_cell(self.cursor_position)
         self.draw()
 
     def move_cursor_down(self):
+        if self.complete:
+            return
+
         original_cursor_position = self.cursor_position
         self.cursor_position += self.game_board.get_width()
-        self.keep_cursor_within_bounds()
+
+        if self.cursor_position >= self.game_board.get_width() * self.game_board.get_height():
+            self.cursor_position -= self.game_board.get_width() * self.game_board.get_height()
+
         self.draw_board_cell(original_cursor_position)
         self.draw_board_cell(self.cursor_position)
         self.draw()
 
     def move_cursor_left(self):
+        if self.complete:
+            return
+
         original_cursor_position = self.cursor_position
         self.cursor_position -= 1
-        self.keep_cursor_within_bounds()
+
+        if original_cursor_position // self.game_board.get_width() != self.cursor_position // self.game_board.get_width():
+            self.cursor_position += self.game_board.get_width()
+
         self.draw_board_cell(original_cursor_position)
         self.draw_board_cell(self.cursor_position)
         self.draw()
 
     def move_cursor_right(self):
+        if self.complete:
+            return
+
         original_cursor_position = self.cursor_position
         self.cursor_position += 1
-        self.keep_cursor_within_bounds()
+
+        if original_cursor_position // self.game_board.get_width() != self.cursor_position // self.game_board.get_width():
+            self.cursor_position -= self.game_board.get_width()
+
         self.draw_board_cell(original_cursor_position)
         self.draw_board_cell(self.cursor_position)
         self.draw()
@@ -100,18 +159,18 @@ class Session:
 
         cell = self.cell_rects[(x, y)]
         if cursor_x == x and cursor_y == y:
-            cell.invert()
+            cell.underline()
         else:
-            cell.unset_invert()
+            cell.unset_underline()
 
         value = self.game_board.get_cell_value(x, y)
         #value = self.match_board.get_cell_value(x, y)
         if value == 2:
-            cell_string = "#"
+            cell_string = self.CHR_TRUE
         elif value == 1:
-            cell_string = "."
+            cell_string = self.CHR_FALSE
         else:
-            cell_string = " "
+            cell_string = self.CHR_UNKNOWN
 
         cell.set_string(0, 0, cell_string)
 
@@ -153,6 +212,7 @@ class Session:
                 string += str(n) + " "
             string = string[0:-1]
             rect_row.set_string(rect_row.width - len(string), 0, string)
+            self._rect_guides.append(rect_row)
 
         for x, guide in enumerate(column_guides):
             rect_column = self.rect_column_guides.new_rect()
@@ -163,6 +223,7 @@ class Session:
             for _y, n in enumerate(guide):
                 y = (max_column_guide_length - len(guide)) + _y
                 rect_column.set_string(rect_column.width - len(str(n)), y, str(n))
+            self._rect_guides.append(rect_column)
 
         self.rect_board.move(max_row_guide_length, max_column_guide_length)
         self.rect_board.resize(1 + (2 * self.match_board.get_width()), self.match_board.get_height())
@@ -172,6 +233,7 @@ class Session:
 
         for (x, y), state in self.match_board.grid.items():
             self.cell_rects[(x, y)].move(1 + (2 * x), y)
+            self.cell_rects[(x, y)].set_string(0, 0, self.CHR_UNKNOWN)
     def quit(self):
         self.playing = False
         wrecked.kill()
@@ -203,33 +265,55 @@ class Session:
             self.quit
         )
         interactor.assign_sequence(
-            "b",
+            "x",
             self.set_board_cell,
             2
         )
         interactor.assign_sequence(
-            "n",
+            "z",
             self.set_board_cell,
             1
         )
         interactor.assign_sequence(
-            " ",
-            self.set_board_cell,
-            0
+            "u",
+            self.undo
         )
 
 
-        start = time.time()
         self.playing = True
+        self.start_time = time.time()
         while self.playing:
             interactor.get_input()
         interactor.restore_input_settings()
 
         if self.complete:
-            end  = time.time() - start
-            print("Completed In %d" % end)
+            friendly_time = "%02d:%02d:%02d" % (
+                self.end_time // (60 * 60),
+                (self.end_time // 60) % 60,
+                self.end_time % 60
+            )
+            print("Completed In %s" % friendly_time)
 
 if __name__ == "__main__":
-    session = Session(width=15, height=10, density=.65)
+    try:
+        w_index = sys.argv.index('-w')
+        w = sys.argv[w_index + 1]
+    except ValueError:
+        w = 20
+
+    try:
+        h_index = sys.argv.index('-h')
+        h = sys.argv[h_index + 1]
+    except ValueError:
+        h = 12
+
+    try:
+        d_index = sys.argv.index('-d')
+        d = sys.argv[d_index + 1]
+    except ValueError:
+        d = .6
+
+
+    session = Session(width=int(w), height=int(h), density=float(d))
     session.play()
 
