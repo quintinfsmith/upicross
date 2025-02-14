@@ -1,8 +1,8 @@
 import time
 import sys
 import wrecked
-from board import Board
-from interactor import Interactor
+from .board import Board
+from .interactor import Interactor
 
 class Session:
     CHR_UNKNOWN = '  '
