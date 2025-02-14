@@ -161,9 +161,3 @@ class Cursor:
     def move_cursor_right(self):
         self.cursor_position += 1
         self.keep_cursor_within_bounds()
-
-
-if __name__ == "__main__":
-    board = Board(15, 10)
-    board.populate(.50)
-    print(board)
