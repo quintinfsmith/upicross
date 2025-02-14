@@ -1,7 +1,7 @@
 import random
 
 class IncongruentBoardError(Exception):
-    '''Thrown when two boards of different dimentions are compared'''
+    '''Thrown when two boards of different dimensions are compared'''
 
 class Board:
     def __init__(self, width, height):
