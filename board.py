@@ -119,7 +119,7 @@ class Board:
 
         output = (" " * max_row_len) + ("--" * self.width) + "-\n"
         for y in range(self.height):
-            output += str(rows[y]) + "|"
+            output += f"{str(rows[y])}|"
             for x in range(self.width):
                 value = self.get_cell_value(x, y)
                 if value == 2:
