@@ -23,43 +23,42 @@ if __name__ == "__main__":
 
     try:
         w_index = sys.argv.index('-w')
-        w = sys.argv[w_index + 1]
+        WIDTH = sys.argv[w_index + 1]
     except ValueError:
-        w = DEFAULT_WIDTH
+        WIDTH = DEFAULT_WIDTH
 
     try:
         h_index = sys.argv.index('-h')
-        h = sys.argv[h_index + 1]
+        HEIGHT = sys.argv[h_index + 1]
     except ValueError:
-        h = DEFAULT_HEIGHT
+        HEIGHT = DEFAULT_HEIGHT
 
     try:
         d_index = sys.argv.index('-d')
-        d = sys.argv[d_index + 1]
+        DENSITY = sys.argv[d_index + 1]
     except ValueError:
-        d = DEFAULT_DENSITY
+        DENSITY = DEFAULT_DENSITY
 
     try:
-        if int(w) <= 0:
+        if int(WIDTH) <= 0:
             raise ValueError()
     except ValueError:
         print("-w requires valid integer > 0")
         sys.exit()
 
     try:
-        if int(h) <= 0:
+        if int(HEIGHT) <= 0:
             raise ValueError()
     except ValueError:
         print("-h requires valid integer > 0")
         sys.exit()
 
     try:
-        if float(d) <= 0 or float(d) > 1:
+        if float(DENSITY) <= 0 or float(DENSITY) > 1:
             raise ValueError()
     except ValueError:
         print("-d requires valid float between 0 & 1")
         sys.exit()
 
-
-    session = Session(width=int(w), height=int(h), density=float(d))
+    session = Session(width=int(WIDTH), height=int(HEIGHT), density=float(DENSITY))
     session.play()
