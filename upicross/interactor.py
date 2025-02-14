@@ -133,7 +133,7 @@ class Interactor(object):
                 pass
             else:
                 self.check_cmd(new_chr)
-        except ContextChange as e:
+        except ContextChange:
             self.active_node = self.cmd_nodes[self.active_context]
 
 

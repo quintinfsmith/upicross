@@ -1,22 +1,22 @@
-# Picross
-A tiny in-console implementation of picross
+# uPicross
+A small in-console implementation of picross
 
 ### Install
 ```bash
-    pip install picross
+    pip install upicross
 ```
 
 ### Run
 ```bash
-    picross [-w <width>] [-h <height>] [-d density]
+    upicross [-w <width>] [-h <height>] [-d density]
 ```    
 
 |Arguments|                                       |
 |---------|---------------------------------------|
 |--help   |Show Help                              |
-|-w \<N>   |Set width to N spaces. Default = 20    |
-|-h \<N>   |Set height to N spaces. Default = 12   |
-|-d \<N>   |Set density to N  (0-1). Default = 0.6 |
+|-w \<N>  |Set width to N spaces. Default = 20    |
+|-h \<N>  |Set height to N spaces. Default = 12   |
+|-d \<N>  |Set density to N  (0-1). Default = 0.6 |
 
 
 |Controls|           |

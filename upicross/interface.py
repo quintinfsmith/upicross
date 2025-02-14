@@ -1,7 +1,7 @@
 import time
 import sys
 import wrecked
-from .board import Board
+from .board import Board, CellState
 from .interactor import Interactor
 
 class Session:
@@ -50,29 +50,33 @@ class Session:
         self.undo_stack = []
 
     def undo(self):
-        if self.undo_stack:
-            x, y, value = self.undo_stack.pop()
-            self.game_board.set_cell(x, y, value)
-            self.draw_board_cell((y * self.game_board.get_width()) + x)
-            self.draw()
+        if not self.undo_stack:
+            return
+
+        x, y, value = self.undo_stack.pop()
+        self.game_board.set_cell(x, y, value)
+        self.draw_board_cell((y * self.game_board.get_width()) + x)
+        self.draw()
 
     def draw(self):
         self.root.draw()
 
     def check_complete(self):
-        if self.match_board.compare_board(self.game_board):
-            self.complete = True
-            self.end_time = time.time() - self.start_time
+        if self.match_board != self.game_board:
+            return
 
-            for rect in self.cell_rects.values():
+        self.complete = True
+        self.end_time = time.time() - self.start_time
+
+        for rect in self.cell_rects.values():
+            rect.set_fg_color(wrecked.BLUE)
+
+        for guide_rects in self._rect_guides:
+            for rect in guide_rects:
                 rect.set_fg_color(wrecked.BLUE)
 
-            for guide_rects in self._rect_guides:
-                for rect in guide_rects:
-                    rect.set_fg_color(wrecked.BLUE)
-
-            self.rect_board.set_fg_color(wrecked.BLUE)
-            self.draw()
+        self.rect_board.set_fg_color(wrecked.BLUE)
+        self.draw()
 
     def set_board_cell(self, value):
         if self.complete:
@@ -84,25 +88,14 @@ class Session:
         current_value = self.game_board.get_cell_value(x, y)
         self.undo_stack.append((x, y, current_value))
 
-        if current_value == 0 or current_value == value:
+        if current_value == CellState.Empty or current_value == value:
             if current_value == value:
-                self.game_board.set_cell(x, y, 0)
+                self.game_board.set_cell(x, y, CellState.Empty)
             else:
                 self.game_board.set_cell(x, y, value)
             self.draw_board_cell(self.cursor_position)
             self.draw()
             self.check_complete()
-
-    def set_cursor_position(self, x, y):
-        if self.complete:
-            return
-
-        original_cursor_position = self.cursor_position
-        self.cursor_position = (y * self.game_board.get_width()) + x
-        self.keep_cursor_within_bounds()
-        self.draw_board_cell(original_cursor_position)
-        self.draw_board_cell(self.cursor_position)
-        self.draw()
 
     def move_cursor_up(self):
         if self.complete:
@@ -182,12 +175,12 @@ class Session:
             self._rect_guides[1][y].unset_bg_color()
 
         value = self.game_board.get_cell_value(x, y)
-        if value == 2:
+        if value == CellState.Set:
             if y % 2 == 0:
                 cell_string = self.CHR_TRUE_EVEN
             else:
                 cell_string = self.CHR_TRUE_ODD
-        elif value == 1:
+        elif value == CellState.Blocked:
             cell_string = self.CHR_FALSE
         else:
             cell_string = self.CHR_UNKNOWN
@@ -252,7 +245,7 @@ class Session:
             for x in range(self.match_board.get_width() + 1):
                 self.rect_board.set_string(3 * x, y, chr(9474))
 
-        for (x, y), state in self.match_board.grid.items():
+        for (x, y), _ in self.match_board.grid.items():
             self.cell_rects[(x, y)].move(1 + (3 * x), y)
             self.cell_rects[(x, y)].resize(2, 1)
             self.cell_rects[(x, y)].set_string(0, 0, self.CHR_UNKNOWN)
@@ -313,12 +306,12 @@ class Session:
         interactor.assign_sequence(
             Session.CTL_SET,
             self.set_board_cell,
-            2
+            CellState.Set
         )
         interactor.assign_sequence(
             Session.CTL_BLOCK,
             self.set_board_cell,
-            1
+            CellState.Blocked
         )
         interactor.assign_sequence(
             Session.CTL_UNDO,
