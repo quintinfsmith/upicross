@@ -15,18 +15,53 @@ A small in-console implementation of picross
     upicross [-w <width>] [-h <height>] [-d density]
 ```    
 
-|Arguments|                                       |
-|---------|---------------------------------------|
-|--help   |Show Help                              |
-|-w \<N>  |Set width to N spaces. Default = 20    |
-|-h \<N>  |Set height to N spaces. Default = 12   |
-|-d \<N>  |Set density to N  (0-1). Default = 0.6 |
+<table>
+    <tr>
+        <th>Arguments</th>
+        <th></th>
+    </tr>
+    <tr>
+        <td>--help</td>
+        <td>Show Help</td>
+    </tr>
+    <tr>
+        <td>-w &lt;N&rt;</td>
+        <td>Set width to N spaces. Default = 20</td>
+    </tr>
+    <tr>
+        <td>-h &lt;N&rt;</td>
+        <td>Set height to N spaces. Default = 12</td>
+    </tr>
+    <tr>
+        <td>-d &lt;N&rt;</td>
+        <td>Set density to N  (0-1). Default = 0.6</td>
+    </tr>
+</table>
 
+<table>
+    <tr>
+        <th>Controls</th>
+        <th></th>
+    </tr>
+    <tr>
+        <td>h,j,k,l</td>
+        <td>Move Cursor</td>
+    </tr>
+    <tr>
+        <td>x</td>
+        <td>Set Cell</td>
+    </tr>
+    <tr>
+        <td>z</td>
+        <td>Block Cell</td>
+    </tr>
+    <tr>
+        <td>u</td>
+        <td>Undo</td>
+    </tr>
+    <tr>
+        <td>q</td>
+        <td>Quit</td>
+    </tr>
+</table>
 
-|Controls|           |
-|--------|-----------|
-|h,j,k,l |Move Cursor|
-|x       |Set Cell   |
-|z       |Block Cell |
-|u       |Undo       |
-|q       |Quit       |
