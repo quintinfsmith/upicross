@@ -25,15 +25,15 @@ A small in-console implementation of picross
         <td>Show Help</td>
     </tr>
     <tr>
-        <td>-w &lt;N&rt;</td>
+        <td>-w &lt;N&gt;</td>
         <td>Set width to N spaces. Default = 20</td>
     </tr>
     <tr>
-        <td>-h &lt;N&rt;</td>
+        <td>-h &lt;N&gt;</td>
         <td>Set height to N spaces. Default = 12</td>
     </tr>
     <tr>
-        <td>-d &lt;N&rt;</td>
+        <td>-d &lt;N&gt;</td>
         <td>Set density to N  (0-1). Default = 0.6</td>
     </tr>
 </table>
