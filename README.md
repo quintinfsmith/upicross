@@ -1,9 +1,9 @@
 # uPicross
-A small in-console implementation of picross
-
+A small in-console implementation of picross<br/>
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/upicross?style=flat-square)](https://pypi.org/project/upicross/)
 [![PyPI](https://img.shields.io/pypi/v/upicross?style=flat-square)](https://pypi.org/project/upicross/)
 [![PyPI - License](https://img.shields.io/pypi/l/upicross?style=flat-square)](https://burnsomni.net/project/upicross/?branch=master&path=LICENSE)
+
 
 ### Install
 ```bash
